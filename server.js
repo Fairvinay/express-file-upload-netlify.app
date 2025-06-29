@@ -19,14 +19,26 @@ const initRoutes = require("./src/routes");
 // Middleware to parse raw binary data
 // Limit the payload size as needed (e.g., 10MB)
 app.use(express.raw({ type: 'application/octet-stream', limit: '10mb' })); 
+let generateFilename = () => {		
+			  const now = new Date();
+			  const pad = (n) => String(n).padStart(2, '0');
 
+			  const year = now.getFullYear();
+			  const month = pad(now.getMonth() + 1); // Months are 0-based
+			  const day = pad(now.getDate());
+			  const hours = pad(now.getHours());
+			  const minutes = pad(now.getMinutes());
+			  const seconds = pad(now.getSeconds());
+
+			  return `${year}${month}${day}_${hours}${minutes}${seconds}.pdf`;
+			};
 app.post('/upload-binary',async (req, res) => {
   if (!req.body) {
     return res.status(400).send('No data provided in the request body.');
   }
 
   // Define the path where the file will be saved
-  const fileName = 'uploaded_binary_file.pdf'; // You might generate a unique name
+  const fileName =  generateFilename(); // 'uploaded_binary_file.pdf'; // You might generate a unique name
   const filePath = path.join(__dirname, 'uploads', fileName);
 
   // Ensure the 'uploads' directory exists
@@ -42,7 +54,7 @@ app.post('/upload-binary',async (req, res) => {
     }
     // cinvert to DOCX 
    let outfile = await exportPDFUtil( fileName );
-
+ 
 
 
     res.status(200).send(`File "${outfile}" uploaded successfully.`);
