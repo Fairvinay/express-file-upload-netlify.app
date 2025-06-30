@@ -1,5 +1,6 @@
 const cors = require("cors");
 const express = require("express");
+const multer = require('multer');
 const app = express();
 const fs = require('fs');
 const path = require('path');
@@ -11,6 +12,10 @@ var corsOptions = {
   //origin: "http://192.168.1.7:4233"
  // origin: "http://localhost:4233"
 };
+
+// Multer setup
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
@@ -32,10 +37,17 @@ let generateFilename = () => {
 
 			  return `${year}${month}${day}_${hours}${minutes}${seconds}.pdf`;
 			};
-app.post('/upload-binary',async (req, res) => {
-  if (!req.body) {
+app.post('/upload-binary',upload.single('file'),async (req, res) => {
+  /*if (!req.body) {
     return res.status(400).send('No data provided in the request body.');
+  }*/
+ if (!req.file) {
+    return res.status(400).send('No file received');
   }
+    console.log('Received file:', req.file.originalname);
+  console.log('Received name:', req.body.name);
+  
+  const filename = req.body.name || req.file.originalname;
 
   // Define the path where the file will be saved
   const fileName =  generateFilename(); // 'uploaded_binary_file.pdf'; // You might generate a unique name
@@ -47,7 +59,8 @@ app.post('/upload-binary',async (req, res) => {
   }
 
   // Write the raw buffer to a file
-  fs.writeFile(filePath, req.body, async(err) => {
+ // fs.writeFile(filePath, req.body, async(err) => {
+  fs.writeFile(filePath, req.file.buffer, async(err) => {
     if (err) {
       console.error('Error saving file:', err);
       return res.status(500).send('Error saving file.');
