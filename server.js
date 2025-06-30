@@ -37,6 +37,48 @@ let generateFilename = () => {
 
 			  return `${year}${month}${day}_${hours}${minutes}${seconds}.pdf`;
 			};
+
+// Function to empty the folder
+function emptyUploadDir() {
+  const uploadDir = path.join(__dirname, 'uploads');
+  fs.readdir(uploadDir, (err, files) => {
+    if (err) {
+      console.error('Error reading upload directory:', err);
+      return;
+    }
+
+    for (const file of files) {
+      const filePath = path.join(uploadDir, file);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting ${filePath}:`, err);
+        } else {
+          console.log(`Deleted: ${filePath}`);
+        }
+      });
+    }
+  });
+}
+function emptyOutputDir() {
+  const outputDir = path.join(__dirname, 'output/ExportPDFToDOCXWithOCROptions');
+  fs.readdir(outputDir, (err, files) => {
+    if (err) {
+      console.error('Error reading Output directory:', err);
+      return;
+    }
+
+    for (const file of files) {
+      const filePath = path.join(outputDir, file);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error(`Error deleting ${filePath}:`, err);
+        } else {
+          console.log(`Deleted: ${filePath}`);
+        }
+      });
+    }
+  });
+}
 app.post('/upload-binary',upload.single('file'),async (req, res) => {
   /*if (!req.body) {
     return res.status(400).send('No data provided in the request body.');
@@ -46,7 +88,7 @@ app.post('/upload-binary',upload.single('file'),async (req, res) => {
   }
     console.log('Received file:', req.file.originalname);
   console.log('Received name:', req.body.name);
-  
+
   const filename = req.body.name || req.file.originalname;
 
   // Define the path where the file will be saved
@@ -132,7 +174,11 @@ app.get('/dowload-binary/:name', (req, res) => {
 
 
  const hostname = '0.0.0.0'; // Or your specific IP address, e.g., '192.168.1.100'
-
+// Run every 60 seconds
+setInterval(emptyUploadDir, 60 * 1000);
+setInterval(emptyOutputDir, 120 * 1000);
+// Optional: run once on startup
+emptyUploadDir();
 //app.use(express.urlencoded({ extended: true }));
 //initRoutes(app);
 
